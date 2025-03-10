@@ -1,8 +1,8 @@
 import connectDb from "@/database/connection";
 import { User } from "@/database/schema/user.schema";
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
-const handler = NextAuth({
+export const authOption: AuthOptions = {
   providers: [
     Google({
       clientId: process.env.CLIENT_ID as string,
@@ -29,6 +29,13 @@ const handler = NextAuth({
         return false;
       }
     },
+    async session({ session, user }) {
+      try {
+        const data = await User.findById(user.id);
+        session.user.role = data.role;
+      } catch (error) {}
+    },
   },
-});
+};
+const handler = NextAuth(authOption);
 export { handler as GET, handler as POST };
