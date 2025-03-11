@@ -1,16 +1,26 @@
 import { authOption } from "@/app/api/auth/[...nextauth]/route";
-import { getServerSession } from "next-auth";
-import { NextRequest } from "next/server";
 
-const authMiddleware = async (req: NextRequest) => {
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { Role } from "../types/type";
+
+export const authMiddleware = async (req: NextRequest) => {
   try {
     const session = await getServerSession(authOption);
-    if (!session) {
+    if (!session || session.user.role !== Role.Admin) {
       return Response.json(
         { message: "please login for accessing the system" },
         { status: 401 }
       );
     }
-    const role = session.user.role;
-  } catch (error) {}
+    return NextResponse.next();
+  } catch (error: unknown) {
+    return Response.json(
+      {
+        message:
+          error instanceof Error ? error.message : "something went wrong",
+      },
+      { status: 401 }
+    );
+  }
 };

@@ -1,7 +1,12 @@
+import connectDb from "@/database/connection";
 import Category from "@/database/schema/category.schema";
+import { authMiddleware } from "../../../../middleware/auth.middleware";
+import { NextRequest } from "next/server";
 
-export async function addCart(req: Request) {
+export async function addCart(req: NextRequest) {
   try {
+    authMiddleware(req)
+    await connectDb();
     const { name, description } = (await req.json()) as {
       name?: string;
       description?: string;
